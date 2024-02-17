@@ -57,7 +57,7 @@ namespace cosmosDatalog
             this.bn_Exit.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.bn_Exit.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.bn_Exit.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.bn_Exit.Image = global::cosmosDatalog.Properties.Resources.exit;
+            this.bn_Exit.Image = global::N530Datalog.Properties.Resources.exit;
             this.bn_Exit.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
             this.bn_Exit.Location = new System.Drawing.Point(206, 234);
             this.bn_Exit.Name = "bn_Exit";
@@ -73,7 +73,7 @@ namespace cosmosDatalog
             this.bn_Stop.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.bn_Stop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.bn_Stop.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.bn_Stop.Image = global::cosmosDatalog.Properties.Resources.stop;
+            this.bn_Stop.Image = global::N530Datalog.Properties.Resources.stop;
             this.bn_Stop.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
             this.bn_Stop.Location = new System.Drawing.Point(125, 234);
             this.bn_Stop.Name = "bn_Stop";
@@ -179,7 +179,7 @@ namespace cosmosDatalog
             this.bn_Start.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.bn_Start.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.bn_Start.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bn_Start.Image = global::cosmosDatalog.Properties.Resources.start;
+            this.bn_Start.Image = global::N530Datalog.Properties.Resources.start;
             this.bn_Start.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
             this.bn_Start.Location = new System.Drawing.Point(44, 234);
             this.bn_Start.Name = "bn_Start";
@@ -224,7 +224,7 @@ namespace cosmosDatalog
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
-            this.Text = "M16 DATA LOGGER V1.3";
+            this.Text = "N530 DATA LOGGER V1.0";
             this.Shown += new System.EventHandler(this.bn_Start_Click);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

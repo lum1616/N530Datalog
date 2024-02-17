@@ -36,7 +36,7 @@ namespace cosmosDatalog
         }
 
         //SerialPort[] _serialPort = new SerialPort[2];
-        string convertDec, sTot_Fill;
+        string convertDec;
         string[] PortNo = new string[2];
         string[] LogFileName = new string[2];
         char[] send_data = new char[Constants.TEXT_LENGTH];
@@ -113,14 +113,14 @@ namespace cosmosDatalog
                 }
                 cbPort.Text = PortNo[0];
                 */
-                PortNo[0] = "COM4";
-                cbPort.Text = "COM4";
+                PortNo[0] = "COM2";
+                cbPort.Text = "COM2";
 
 
             }
             catch (SystemException e)
             {
-                PortNo[0] = "COM4";
+                PortNo[0] = "COM2";
                 MessageBox.Show(e.Message, "ERROR"); }
 
 
@@ -169,9 +169,9 @@ namespace cosmosDatalog
                 {
 
                     _serialPort.PortName = PortNo[i];
-                    _serialPort.DataBits = 8;
-                    _serialPort.Parity = System.IO.Ports.Parity.Odd;
-                    _serialPort.StopBits = System.IO.Ports.StopBits.One;
+                    _serialPort.DataBits = 7;
+                    _serialPort.Parity = System.IO.Ports.Parity.Even;
+                    _serialPort.StopBits = System.IO.Ports.StopBits.Two;
                     _serialPort.Open();
                 }// if
             }
@@ -492,7 +492,10 @@ namespace cosmosDatalog
             tbToggle.Text = toggle.ToString();
             
             sPlcNumb = "0" + numb.ToString();
-            sWrtData = ("%" + sPlcNumb + "#RD" + PLC_DATA_RDY + "**\r");            
+
+            //sWrtData = ("%" + sPlcNumb + "#RD" + PLC_DATA_RDY + "**\r"); 
+            sWrtData = ("@00RD0100000156*\r"); 
+            
 
             if (_serialPort.IsOpen == true)
             {
@@ -506,25 +509,32 @@ namespace cosmosDatalog
                     // error no data receive from PLC
                     if (read_data.Length > 9)
                     {
-                        string ss = read_data.Substring(6, 4);
-                        if (!(ss == "0000"))
+                        string ss = read_data.Substring(7, 4);
+                        if (ss == "0001")
                         {
                             DataReady = 1;
 
-                            // read remain data1
-                            sWrtData = ("%" + sPlcNumb + "#RD" + DATA1 + "**\r");
+                            // read D211 to D217               
+                            sWrtData = ("@00RD0211000753*\r");
                             _serialPort.Write(sWrtData);
                             Thread.Sleep(Constants.READ_DELAY);
                             read_data = "";
                             read_data = _serialPort.ReadExisting();
 
-                            // read remain data2
-                            sWrtData = ("%" + sPlcNumb + "#RD" + DATA2 + "**\r");
+                            // read remain data1
+                            // read D110 to D123
+                            // D110 = team a/b
+                            // D111 = batch no
+                            // D112 = silo no
+                            // D113 = Target Weight
+                            // D114 - D123 = rcp Name
+                            
+                            sWrtData = ("@00RD0110001453*\r");
                             _serialPort.Write(sWrtData);
                             Thread.Sleep(Constants.READ_DELAY);
                             read_data1 = "";
                             read_data1 = _serialPort.ReadExisting();                    
-
+                            
 
                         }
 
@@ -544,7 +554,7 @@ namespace cosmosDatalog
 
         void HandleData(int numb)
         {
-            string sTeam, sDt,sTime, sRcpName, sMatName;
+            string sTeam, sDt, sRcpName, sMatName;
             string sBatchNo, sSiloNo, sTargWt, sActWt, sDiffWt;
 
             var dbClient = new MongoClient("mongodb://127.0.0.1:27017");
@@ -553,47 +563,41 @@ namespace cosmosDatalog
           
             bufStore = "";
 
-            // Get Team A/B
-            ConvertToDecStr(0, 6 + (0 * 4), read_data);
-            sTeam = convertDec;
+            // Get material name D211 to D216 (6 )
+            ConvertToAlphStr(7, 6 * 4, read_data);      // startpos,length,string
+            sMatName = buf;
 
+            // Get Actual weight D217
+            ConvertToDecStr(0, 30, read_data);           // dec, start_pos, data 
+            sActWt = convertDec;                         // add converted data to buffer                       	     			
+
+            // get date time
             sDt = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
+            // Get Team A/B
+            ConvertToDecStr(0, 6, read_data1);
+            sTeam = convertDec;
 
-            /*
-            // Get date Time ( 3 words ) 
-            ConvertPLC_DateTime("d", 6 + (1 * 4), read_data);
-            //sDt = bufStore + buf;						        // add converted data to buffer
-            sDt = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss") ;
+            // Get Batch No.
+            ConvertToDecStr(0, 6 + (1*4) , read_data1);                 // dec, start_pos, data 
+            sBatchNo = convertDec;					            // add converted data to buffer  
 
-            ConvertPLC_DateTime("t", 6 + (0 * 4), read_data);
-            sTime = bufStore + " " + buf;						// add converted data to buffer
-            */
+            // Get silo number)                                                                           	         
+            ConvertToDecStr(0, 6 + (2 * 4), read_data1); 		// (int decPos, int startPos , string read_data )  	     			
+            sSiloNo = convertDec;                               // add converted data to buffer                       	     			
+
+
+            // Get Target weight.
+            ConvertToDecStr(0, 6 + (3 * 4 ), read_data1);            // dec, start_pos, data 
+            sTargWt = convertDec;                                 // add converted data to buffer                       	     			
 
 
             // Get recipe name ( 15 words )
-            ConvertToAlphStr(6 + (3*4), 15 * 4, read_data);     // startpos,length,string
+            ConvertToAlphStr(7 + (4*4), 10 * 4, read_data1);     // startpos,length,string
             sRcpName = buf;						                // add converted data to buffer   
 
-            // Get Batch No.
-            ConvertToDecStr(0, 6 , read_data1);                 // dec, start_pos, data 
-            sBatchNo =  convertDec;					            // add converted data to buffer  
+            
 
-            // Get silo number)                                                                           	         
-            ConvertToDecStr(0, 6 + (1 * 4), read_data1); 		// (int decPos, int startPos , string read_data )  	     			
-            sSiloNo = convertDec;						        // add converted data to buffer                       	     			
-           
-            // Get material name ( 7 words )
-            ConvertToAlphStr(6 + (2*4), 7 * 4, read_data1);      // startpos,length,string
-            sMatName = buf;		
-
-            // Get Target weight.
-            ConvertToDecStr(0, 6 + (9*4), read_data1);            // dec, start_pos, data 
-            sTargWt = convertDec;					              // add converted data to buffer                       	     			
-          
-            // Get Actual weight.
-            ConvertToDecStr(0, 6 +  (10*4), read_data1);           // dec, start_pos, data 
-            sActWt =  convertDec;                                  // add converted data to buffer                       	     			
 
             // Get Diffwt weight.
             //ConvertToDecStr(0, 6 + (11*4), read_data1);          // dec, start_pos, data 
@@ -603,7 +607,7 @@ namespace cosmosDatalog
 
             try
             {
-                var M16logs = db.GetCollection<BsonDocument>("m16");
+                var N530logs = db.GetCollection<BsonDocument>("N530");
                 var doc = new BsonDocument
                 {
                     //{"date", DateTime.UtcNow},
@@ -618,7 +622,7 @@ namespace cosmosDatalog
                     {"diffWt", sDiffWt}
                 };
 
-                M16logs.InsertOne(doc);
+                N530logs.InsertOne(doc);
                 rtbStatus.Text = rtbStatus.Text + sDt + " -- Silo : " + sSiloNo + "; Weight :" + sActWt + "\r";
             }
             catch (SystemException)
@@ -665,7 +669,7 @@ namespace cosmosDatalog
             if (type == 0)
             {
                 //sCmd = ("%" + "01" + "#WDD28970289700000**\r");
-                sCmd = ("%" + sPlcNumb + "#WD" + PLC_DATA_RDY + "0000**\r");
+                sCmd = ("@00WD0100000052*\r");
 
             }
             // set batch start read done 
@@ -730,11 +734,16 @@ namespace cosmosDatalog
 
             try
             {
+                /*
                 s1 = ReadStr.Substring(startPos, 2);
                 s2 = ReadStr.Substring(startPos + 2, 2);
                 s3 = s2 + s1;
+                */
+                s3 = ReadStr.Substring(startPos + 1, 4);
 
                 i = int.Parse(s3, System.Globalization.NumberStyles.HexNumber);
+                
+
                 temp = i;
                 // if i <0 : negetive value
                 if (i > 32767)
@@ -911,9 +920,9 @@ namespace cosmosDatalog
                     j++;
                     s4 = s1 + s2;
 
-                    int1 = Convert.ToInt32(s4, 16);
-                    s5 = s5 + char.ConvertFromUtf32(int1);
                     int1 = Convert.ToInt32(s3, 16);
+                    s5 = s5 + char.ConvertFromUtf32(int1);
+                    int1 = Convert.ToInt32(s4, 16);
                     s5 = s5 + char.ConvertFromUtf32(int1);
                 }//for (i = 0; i < k; i++)
                 buf = s5;

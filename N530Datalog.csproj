@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1B051581-B6DC-4E9D-A214-C0FB392C53EF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>cosmosDatalog</RootNamespace>
-    <AssemblyName>cosmosDatalog</AssemblyName>
+    <RootNamespace>N530Datalog</RootNamespace>
+    <AssemblyName>N530Datalog</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
